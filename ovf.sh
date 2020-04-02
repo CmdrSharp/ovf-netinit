@@ -30,6 +30,12 @@ log_result "Fetching guest info from VMWare"
 vmtoolsd --cmd "info-get guestinfo.ovfenv" > /tmp/ovf_env.xml
 TMPXML='/tmp/ovf_env.xml'
 
+# Verify contents of XML
+if [[ `cat $TMPXML` != *"vCloud"* ]]; then
+    log_result "Unable to fetch OVF ENV. Aborting."
+    exit 1
+fi
+
 # Set hostname
 HOSTNAME=`cat $TMPXML | grep 'computerName' | sed -n -e '/value\=/ s/.*\=\" *//p' | sed 's/\"\/>//'`
 log_result "Setting hostname = $HOSTNAME"
@@ -95,6 +101,7 @@ while read -r line; do
     fi
 
     log_result "Creating interface $NAME: $IP/$NETMASK via $GATEWAY"
+    nmcli con add con-name "$NAME" ifname $NAME type ethernet ip4 $IP/$NETMASK gw4 $GATEWAY
 
     if [[ -n $DNS1 ]] && [[ -n $DNS2 ]]; then
         log_result "Setting DNS1=$DNS1, DNS2=$DNS2"
