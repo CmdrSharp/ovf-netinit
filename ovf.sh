@@ -91,6 +91,7 @@ while read -r line; do
 
     IP=`cat $TMPXML | grep "vCloud_ip_$INTERFACE_NUMBER" | grep -oP $IP_PATTERN`
     NETMASK=`cat $TMPXML | grep "vCloud_netmask_$INTERFACE_NUMBER" | grep -oP $IP_PATTERN`
+    CIDR=`ipcalc -p 0.0.0.0 $NETMASK | grep -oP "([0-9]{1,2})"`
     GATEWAY=`cat $TMPXML| grep "vCloud_gateway_$INTERFACE_NUMBER" | grep -oP $IP_PATTERN`
     DNS1=`cat $TMPXML | grep "vCloud_dns1_$INTERFACE_NUMBER" | grep -oP $IP_PATTERN`
     DNS2=`cat $TMPXML | grep "vCloud_dns2_$INTERFACE_NUMBER" | grep -oP $IP_PATTERN`
@@ -101,7 +102,8 @@ while read -r line; do
     fi
 
     log_result "Creating interface $NAME: $IP/$NETMASK via $GATEWAY"
-    nmcli con add con-name "$NAME" ifname $NAME type ethernet ip4 $IP/$NETMASK gw4 $GATEWAY
+    nmcli con add con-name "$NAME" ifname $NAME type ethernet ip4 $IP/$CIDR gw4 $GATEWAY
+    sed -i "s/DEFROUTE=yes/DEFROUTE=no/" /etc/sysconfig/network-scripts/ifcfg-$NAME
 
     if [[ -n $DNS1 ]] && [[ -n $DNS2 ]]; then
         log_result "Setting DNS1=$DNS1, DNS2=$DNS2"
