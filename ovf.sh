@@ -1,6 +1,6 @@
 #!/bin/bash
 mkdir -p "/opt/ovfset"
-STATE='/opt/ovfset/state'
+STATE='/opt/ovfset/interface.state'
 
 log_result () {
     echo "`date` - $1" | tee -a /opt/ovfset/log
